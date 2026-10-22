@@ -52,13 +52,13 @@ async function makeCard(){
  g.fillStyle='#fff';g.fillRect(1440,222,295,48);g.fillStyle='#151515';g.font='bold 22px Arial';g.textAlign='center';g.fillText(parts.length===3?parts[2]+'/'+parts[1]+'/'+parts[0]:'',1580,253);
  const rows=snapshot().rows;
  const keys=['Peanuts','Tree Nuts','Soy','Fish or Molluscs','Crustacean','Egg','Milk','Wheat or Gluten','Sesame','Lupin','Sulphites'];
- const cols=[803,894,970,1039,1119,1207,1286,1368,1456,1530,1611];
+ const cols=[803,894,970,1038,1114,1190,1257,1322,1398,1473,1541];
  g.fillStyle='#171717';g.textAlign='left';
- rows.forEach((r,i)=>{if(!r.name.trim())return;const y=470+i*39.2;g.font='18px Arial';let n=r.name.trim();while(g.measureText(n).width>605&&n.length>2)n=n.slice(0,-1);if(n!==r.name.trim())n=n.trim()+'…';g.fillText(n,130,y);const a=r.allergens||[];
+ rows.forEach((r,i)=>{if(!r.name.trim())return;const y=467+i*39.2;g.font='18px Arial';let n=r.name.trim();while(g.measureText(n).width>605&&n.length>2)n=n.slice(0,-1);if(n!==r.name.trim())n=n.trim()+'…';g.fillText(n,130,y);const a=r.allergens||[];
  if(!a.length){g.font='italic 15px Arial';g.fillText('No Allergens',470,y)}
  keys.forEach((k,j)=>{const selected=k==='Fish or Molluscs'?a.some(v=>v==='Fish'||v==='Molluscs'):k==='Wheat or Gluten'?a.some(v=>v==='Wheat'||v==='Gluten'):a.includes(k);if(selected){g.font='bold 21px Arial';g.textAlign='center';g.fillText('X',cols[j],y);g.textAlign='left'}});
  // Initials are entered for each populated menu row, centred in the final column.
- g.font='bold 19px Arial';g.textAlign='center';g.fillText('NM',1702,y);g.textAlign='left';
+ g.font='bold 19px Arial';g.textAlign='center';g.fillText('NM',1613,y);g.textAlign='left';
  });return c;
 }
 async function downloadAllergen(){const b=$('#allergenBtn');b.disabled=true;b.textContent='Creating allergen card…';try{const c=await makeCard();await exportCanvasPdf(c,'Yarrie_Allergen_Card_'+$('#day').value+'_'+$('#serviceDate').value+'.pdf')}catch(e){alert('Could not create allergen card: '+e.message)}finally{b.disabled=false;b.textContent='Download Allergen Card PDF'}}
