@@ -13,6 +13,23 @@ function reliableMenuSnapshot(){
  try{const saved=JSON.parse(localStorage.getItem(storageKey));if(hasDishes(saved))return saved}catch(e){}
  return live;
 }
+// Safari may restore empty text inputs after opening a downloaded PDF while leaving checkboxes intact.
+// Restore only missing names from the last rendered menu; never overwrite user-entered names.
+function restoreMenuNamesIfLost(){
+ const backup=lastRenderedMenu;
+ if(!backup||!Array.isArray(backup.rows))return;
+ let restored=false;
+ names.forEach((_,i)=>{
+  const input=$('#dish'+i);
+  const previous=backup.rows[i]?.name;
+  if(input&&!input.value.trim()&&typeof previous==='string'&&previous.trim()){
+   input.value=previous;restored=true;
+  }
+ });
+ if(restored)save();
+}
+window.addEventListener('pageshow',()=>{restoreMenuNamesIfLost()});
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)restoreMenuNamesIfLost()});
 function render(){save();lastRenderedMenu=snapshot();const a=$('#art');a.replaceChildren();txt($('#day').value,1240,735,83,'400','#8034A8');const start=900,step=171;const rule=document.createElementNS(svgNS,'line');rule.setAttribute('x1','350');rule.setAttribute('x2','2130');rule.setAttribute('y1','3120');rule.setAttribute('y2','3120');rule.setAttribute('stroke','#777');rule.setAttribute('stroke-width','3');a.append(rule);
 // Fixed-size, fixed-position dietary symbols alongside savoury rows 2, 3 and 4.
 [['+', '#E9BE32', 1], ['m', '#528DA4', 2], ['v', '#528DA4', 3]].forEach(([mark, fill, idx]) => {
@@ -25,9 +42,10 @@ function render(){save();lastRenderedMenu=snapshot();const a=$('#art');a.replace
  letter.setAttribute('font-family','Arial, sans-serif');letter.setAttribute('font-size','77');
  letter.setAttribute('font-weight','700');letter.setAttribute('fill','#fff');letter.textContent=mark;a.append(letter);
 });names.forEach((_,i)=>{const n=$('#dish'+i).value.trim(),als=[...document.querySelectorAll('input[data-row="'+i+'"]:checked')].map(x=>x.value);const top=(i===10?2779:start+i*step); if(n){txt(n,1240,top+73,79,'700','#242424');txt(als.join(' • ')||'No Allergens',1240,top+125,37,'400','#525969')}});$('#editor').classList.add('hidden');$('#preview').classList.remove('hidden');$('#cardPreview').classList.add('hidden');scrollTo(0,0)}
-$('#previewBtn').onclick=render;$('#allergenBtn').onclick=downloadAllergen;$('#cardPreviewBtn').onclick=async()=>{const c=await makeCard();$('#cardImage').src=c.toDataURL('image/png');$('#cardPreview').classList.toggle('hidden');};$('#editBtn').onclick=()=>{$('#preview').classList.add('hidden');$('#editor').classList.remove('hidden');scrollTo(0,0)};$('#printBtn').onclick=downloadPdf;$('#clearBtn').onclick=()=>{if(confirm('Clear all dishes and allergens?')){load({day:$('#day').value,rows:[]});save()}};$('#sampleBtn').onclick=()=>{load({day:'Thursday',rows:[['Honey chicken',['Egg','Sulphites','Sesame']],['Lamb korma curry',['Milk','Sulphites']],['Egg frittata',['Milk','Egg']],['Potato gratin',['Milk']],['Steamed rice',[]],['GF carbonara',['Milk','Egg']],['Grilled halloumi',['Milk']],['Roast carrots',[]],['Steamed kale',[]],['Steamed corn',[]],['Long John donuts',['Gluten','Milk','Egg']]].map(([name,allergens])=>({name,allergens}))});save();render()};
+$('#previewBtn').onclick=render;$('#allergenBtn').onclick=downloadAllergen;$('#cardPreviewBtn').onclick=async()=>{const c=await makeCard();$('#cardImage').src=c.toDataURL('image/png');$('#cardPreview').classList.toggle('hidden');};$('#editBtn').onclick=()=>{restoreMenuNamesIfLost();$('#preview').classList.add('hidden');$('#editor').classList.remove('hidden');scrollTo(0,0)};$('#printBtn').onclick=downloadPdf;$('#clearBtn').onclick=()=>{if(confirm('Clear all dishes and allergens?')){load({day:$('#day').value,rows:[]});save()}};$('#sampleBtn').onclick=()=>{load({day:'Thursday',rows:[['Honey chicken',['Egg','Sulphites','Sesame']],['Lamb korma curry',['Milk','Sulphites']],['Egg frittata',['Milk','Egg']],['Potato gratin',['Milk']],['Steamed rice',[]],['GF carbonara',['Milk','Egg']],['Grilled halloumi',['Milk']],['Roast carrots',[]],['Steamed kale',[]],['Steamed corn',[]],['Long John donuts',['Gluten','Milk','Egg']]].map(([name,allergens])=>({name,allergens}))});save();render()};
 
 async function downloadPdf(){
+ restoreMenuNamesIfLost();
  const record=reliableMenuSnapshot();
  const button=$('#printBtn');button.disabled=true;button.textContent='Creating PDF…';
  try{
@@ -87,5 +105,5 @@ async function makeCard(){
  g.font='bold 19px Arial';g.textAlign='center';g.fillText((record.initials??$('#chefInitials').value).trim().slice(0,5),initialX,y);g.textAlign='left';
  });return c;
 }
-async function downloadAllergen(){const b=$('#allergenBtn');b.disabled=true;b.textContent='Creating allergen card…';try{const c=await makeCard();await exportCanvasPdf(c,'Yarrie_Allergen_Card_'+$('#day').value+'_'+$('#serviceDate').value+'.pdf')}catch(e){alert('Could not create allergen card: '+e.message)}finally{b.disabled=false;b.textContent='Download Allergen Card PDF'}}
+async function downloadAllergen(){restoreMenuNamesIfLost();const b=$('#allergenBtn');b.disabled=true;b.textContent='Creating allergen card…';try{const c=await makeCard();await exportCanvasPdf(c,'Yarrie_Allergen_Card_'+$('#day').value+'_'+$('#serviceDate').value+'.pdf')}catch(e){alert('Could not create allergen card: '+e.message)}finally{b.disabled=false;b.textContent='Download Allergen Card PDF'}}
 </script></body></html>
