@@ -1,11 +1,10 @@
-
 {
   "name": "Yarrie Dinner Menu",
-  "short_name": "Dinner Menu",
-  "start_url": "/Yarrie-dinner-menu/index.html",
-  "scope": "/Yarrie-dinner-menu/",
+  "short_name": "Yarrie Dinner",
+  "start_url": "./index.html",
+  "scope": "./",
   "display": "standalone",
-  "background_color": "#692f9e",
+  "background_color": "#eaf0f2",
   "theme_color": "#692f9e",
   "icons": [
     {
@@ -14,7 +13,7 @@
       "type": "image/png"
     },
     {
-      "src": "apple-touch-icon.png",
+      "src": "icon-512.png",
       "sizes": "512x512",
       "type": "image/png"
     }
